@@ -1,1 +1,1 @@
-# sprinteAnimation
+# spriteAnimation
