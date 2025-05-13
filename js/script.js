@@ -1,92 +1,74 @@
-let playerState = "idle";
-const dropdown = document.getElementById("animations");
-dropdown.addEventListener("change", function(e){
-    playerState = e.target.value;
-})
-
 const canvas = document.getElementById("canvas1");
 const ctx = canvas.getContext("2d");
 
-const CANVAS_WIDTH = canvas.width = 600;
-const CANVAS_HEIGHT = canvas.height = 600;
+const CANVAS_WIDTH = canvas.width = 800;
+const CANVAS_HEIGHT = canvas.height = 700;
 
-const playerImage = new Image();
-playerImage.src = "../img/shadow_dog.png"
-// Dog dimension:
-const spriteWidth = 575;
-const spriteHeight = 523;
+let gameSpeed = 4;
 
-let gameFrame = 0;
-const staggerFrames = 5; // Dog speed - the bigger the number the slower
-const spriteAnimations = [];
-const animationStates = [
-    {
-        name:'idle',
-        frames: 7,
-    },
-    {
-        name:'jump',
-        frames: 7,
-    },
-    {
-        name:'fall',
-        frames: 7,
-    },
-    {
-        name:'run',
-        frames: 9,
-    },
-    {
-        name:'dizzy',
-        frames: 11,
-    },
-    {
-        name:'sit',
-        frames: 5,
-    },
-    {
-        name:'roll',
-        frames: 7,
-    },
-    {
-        name:'bite',
-        frames: 7,
-    },
-    {
-        name:'ko',
-        frames: 12,
-    },
-    {
-        name:'gethit',
-        frames: 4,
-    }
-];
+const backgroudLayer1 = new Image();
+backgroudLayer1.src = '../img/backgroundLayers/layer-1.png';
+const backgroudLayer2 = new Image();
+backgroudLayer2.src = '../img/backgroundLayers/layer-2.png';
+const backgroudLayer3 = new Image();
+backgroudLayer3.src = '../img/backgroundLayers/layer-3.png';
+const backgroudLayer4 = new Image();
+backgroudLayer4.src = '../img/backgroundLayers/layer-4.png';
+const backgroudLayer5 = new Image();
+backgroudLayer5.src = '../img/backgroundLayers/layer-5.png';
 
-animationStates.forEach((state, index) => {
-    let frames = {
-        location: [],
-    }
-    for (let j = 0; j < state.frames; j++){
-        let positionX = j * spriteWidth;
-        let positionY = index * spriteHeight;
-        frames.location.push({x: positionX, y: positionY});
-    }
-    spriteAnimations[state.name] = frames;
+window.addEventListener("load", function(){
+    const slider = document.getElementById("slider");
+slider.value = gameSpeed;
+const showGameSpeed = document.getElementById("showGameSpeed");
+showGameSpeed.innerHTML = gameSpeed;
+slider.addEventListener("change", function(e){
+    console.log(e.target.value);
+    gameSpeed = e.target.value;
+    showGameSpeed.innerHTML = e.target.value;
 });
-console.log(spriteAnimations);
 
-
-function animate(){
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); 
-    let position = Math.floor(gameFrame/staggerFrames) % spriteAnimations[playerState].location.length; // only integers without decimal points
-    let frameX = spriteWidth * position;
-    let frameY = spriteAnimations[playerState].location[position].y;
- 
-    ctx.drawImage(playerImage, frameX, frameY, spriteWidth, spriteHeight, 0, 0, spriteWidth, spriteHeight);
-    //Explication: ctx.drawImage(image, sourcex, sourcey, sourcewidth, sourceheigth, destinationx, destinationy, destinationwidth, destinationheigth);
-
-    gameFrame++
-    requestAnimationFrame(animate);
+class Layer {
+    constructor(image, speedModifier){
+        this.x = 0;
+        this.y = 0;
+        this.width = 2400;
+        this.height = 700;
+        this.image = image;
+        this.speedModifier = speedModifier;
+        this.speed = gameSpeed * this.speedModifier;
+    }
+    update(){
+        this.speed = gameSpeed * this.speedModifier;
+        if(this.x <= -this.width){
+            this.x = 0;
+        }
+        this.x = this.x - this.speed;
+    }
+    draw(){
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x + this.width, this.y,this.width, this.height);
+    }
 }
 
+const layer1 = new Layer(backgroudLayer1, 0.2);
+const layer2 = new Layer(backgroudLayer2, 0.4);
+const layer3 = new Layer(backgroudLayer3, 0.6);
+const layer4 = new Layer(backgroudLayer4, 0.8);
+const layer5 = new Layer(backgroudLayer5, 1);
+
+const gameObjects = [layer1, layer2, layer3, layer4, layer5];
+
+function animate(){
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    gameObjects.forEach(object => {
+        object.update()
+        object.draw();
+    });
+
+    requestAnimationFrame(animate);
+}
 animate();
+
+});
+
